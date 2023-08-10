@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      initContainers:
+        - name: check-config
+          image: {{ .Values.image }}
+          command: ["atticd"]
+          args: ["--mode", "check-config", "--config", "/config/config.toml"]
+          volumeMounts:
+          - name: config
+            mountPath: /config
+            readOnly: true
+        {{- if eq .Values.storage.type "local" }}
+        - name: sqlite
+          image: {{ .Values.sqlite.image }}
+          command: ["sqlite3"]
+          args: ["/data/server.db"]
+          volumeMounts:
+          - name: data
+            mountPath: /data
+        {{- end }}
+        - name: db-migrations
+          image: {{ .Values.image }}
+          command: ["atticd"]
+          args: ["--mode", "check-config", "--config", "/config/config.toml"]
+          volumeMounts:
+          - name: config
+            mountPath: /config
+            readOnly: false
+          {{- if eq .Values.storage.type "local" }}
+          - name: data
+            mountPath: /data
+          {{- end }}
+      containers:
+        - name: attic
+          image: {{ .Values.image }}
+          command: ["atticd"]
+          args: ["--mode", "api-server", "--config", "/config/config.toml"]
+          volumeMounts:
+          - name: config
+            mountPath: /config
+            readOnly: true
+          {{- if eq .Values.storage.type "local" }}
+          - name: data
+            mountPath: /data
+          {{- end }}
+          ports:
+          - containerPort: 80
+      volumes:
+        - name: config
+          configMap:
+            name: {{ .Release.Name }}-config-map
+        {{ if eq .Values.storage.type "local" }}
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ .Release.Name }}-pvc
+
+            readOnly: false
+        {{ end }}

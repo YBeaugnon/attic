@@ -1,0 +1,55 @@
+replicas: 1
+image: ghcr.io/zhaofengli/attic:4902d57f5dae8ec660ee9ee14c45c2192f9fe8b1
+sqlite:
+  image: keinos/sqlite3
+api_endpoint: api_endpoint
+allowed-hosts: []
+database:
+  url: "%database_url%"
+  # If any of those are not nil, database.url will be ignored.
+  #
+  # host: postgres.attic
+  # name: attic
+  #
+  # user: attic # if database.secret.userKey is set, this will be ignored.
+  # password: toto1234 # if database.secret.password is set, this will be ignored.
+  #
+  # secret:
+  #   name: pg-attic-secret
+  #   userKey: user
+  #   passwordKey: password
+
+storage:
+  type: local
+
+  # local storage configuration
+  capacity: 10Gi
+  class: default
+
+  # s3 storage configuration
+  # region: us-east-1
+  # bucket: some-bucket
+  # endpoint: https://s3.example.com
+  #
+  # credentials:
+  #   access_key_id = ""
+  #   secret_access_key = ""
+  #
+  #   secret:
+  #     name: s3-attic-secret
+  #     access_key_id_key: access_key_id
+  #     secret_access_key_key: secret_access_key
+
+chunking:
+  nar_size_treshold: 65536 # 64KiB
+  min_size: 16384 # 16 KiB
+  avg_size: 65536 # 64 KiB
+  max_size: 262144 # 256 KiB
+
+compression:
+  type: zstd
+  level: 8
+
+garbage-collection:
+  interval: "12 hours"
+  default-retention-period: 0
