@@ -1,0 +1,14 @@
+apiVersion: v1
+entries:
+  attic:
+  - apiVersion: v2
+    appVersion: 1.16.0
+    created: "2023-08-17T02:49:17.98344038+02:00"
+    description: A Helm chart for Kubernetes
+    digest: d5f1a832598e23efe37c3b625ba0cbb062ab6f2474326d0cf7be62d095a2780e
+    name: attic
+    type: application
+    urls:
+    - attic-0.1.0.tgz
+    version: 0.1.0
+generated: "2023-08-17T02:49:17.981974408+02:00"
