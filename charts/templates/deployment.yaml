@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+    spec:
+      volumes:
+      - name: config
+        configMap:
+          name: {{ .Release.Name }}-config
+          items:
+          - key: config.toml
+            path: "config.toml"
+      {{- if eq .Values.storage.type "local" }}
+      - name: data
+        persistentVolumeClaim:
+          claimName: {{ .Release.Name }}-data
+      {{- end }}
+
+      containers:
+      - name: api-server
+        image: {{ .Values.image }}
+        command: ["atticd", "-f", "/etc/attic/config.toml", "--mode", "api-server"]
+        {{- if .Values.envFromSecrets }}
+        envFrom:
+        {{- end }}
+        {{- range .Values.envFromSecrets }}
+        - secretRef:
+            name: {{ . }}
+        {{- end }}
+        env:
+        - name: ATTIC_SERVER_DATABASE_URL
+          value: {{ .Values.database.url | quote }}
+        volumeMounts:
+        - name: config
+          mountPath: "/etc/attic"
+          readOnly: true
+      {{- if eq .Values.storage.type "local" }}
+        - name: data
+          mountPath: "/data"
+      {{- end }}

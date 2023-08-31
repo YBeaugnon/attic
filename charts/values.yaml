@@ -1,0 +1,10 @@
+image: ghcr.io/zhaofengli/attic:latest
+replicas: 1
+envFromSecrets: [ "attic-secrets" ]
+
+storage:
+  type: "local"
+  capacity: 10Gi
+  class: "default"
+database:
+  url: "%database_url%"
